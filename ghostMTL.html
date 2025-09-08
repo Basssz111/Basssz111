@@ -2,11 +2,12 @@
 <html>
 
 <head>
-    <title>UV</title>
+    <title>MTL</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
+            background: #000;
         }
     </style>
 </head>
@@ -18,14 +19,35 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
+          const scene = new THREE.Scene();
 
+          const bgTexture = new THREE.TextureLoader().load('https://basssz111.github.io/Basssz111/NightSkyHDRI003_1K-HDR.png'); // เปลี่ยน URL เป็นภาพที่ต้องการ
+        scene.background = bgTexture;
+      
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true; // ✅ เปิดใช้งานเงา!
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
+    
+        //หมอก
+        scene.fog = new THREE.FogExp2(0x0a0a0f, 0.18);
 
-        const scene = new THREE.Scene();
+        const groundTexture = new THREE.TextureLoader().load('https://basssz111.github.io/Basssz111/NightSkyHDRI003_1K-HDR.png');
+        groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+        groundTexture.repeat.set(8, 8);
+        groundTexture.encoding = THREE.sRGBEncoding;
+        const groundMaterial = new THREE.MeshStandardMaterial({
+            map: groundTexture,
+            color: 0x222222,
+            roughness: 0.8,
+            metalness: 0.1
+        });
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.01;
+        ground.receiveShadow = true;
+        scene.add(ground);
 
         // ✅ กล้อง
         const camera = new THREE.PerspectiveCamera(
@@ -38,16 +60,26 @@
         camera.lookAt(0, 0, 0);
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0x808080); // แสงสว่างทั่วไป
+        const ambientLight = new THREE.AmbientLight(0x222233, 0.5);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffeedd, 0.9); // แสงทิศทาง
-        directionalLight.position.set(10, 5, 10);
-        directionalLight.castShadow = true; // ✅ แสงนี้สร้างเงา
-        scene.add(directionalLight);
+        const moonLight = new THREE.DirectionalLight(0xccccff, 0.7); // แสงทิศทาง
+        moonLight.position.set(5, 10, 5); // <-- fixed variable name
+        moonLight.castShadow = true; // ✅ แสงนี้สร้างเงา
+        scene.add(moonLight);
+
+        const redLight = new THREE.PointLight(0xff2222, 1.2, 10);
+        redLight.position.set(2, 2, 2);
+        redLight.castShadow = true;
+        scene.add(redLight);
 
 
 /* Auto-exported from Blender */
+        const textureLoader = new THREE.TextureLoader();
+        const envMap = new THREE.TextureLoader().load('https://basssz111.github.io/Basssz111/Kitchen_Knife_Blade_BaseColor.png');
+        envMap.mapping = THREE.EquirectangularReflectionMapping;
+        const ghostTexture = textureLoader.load('https://basssz111.github.io/Basssz111/shrine_aiStandardSurface5_BaseColor.png'); // Replace with your ghost texture
+        const knifeTexture = textureLoader.load('https://basssz111.github.io/Basssz111/Kitchen_Knife_Blade_BaseColor.png'); // Replace with your knife texture
 
 
        const loader = new THREE.OBJLoader();
@@ -59,6 +91,7 @@
                     child.castShadow = true;
                     child.receiveShadow = true;
                     child.material = new THREE.MeshStandardMaterial({
+                        map: ghostTexture,
                         color: 0xffffff
                     });
                 }
@@ -79,6 +112,7 @@
                     child.castShadow = true;
                     child.receiveShadow = true;
                     child.material = new THREE.MeshStandardMaterial({
+                        
                         color: 0xffffff
                     });
                 }
@@ -89,7 +123,7 @@
         },
         undefined,
         function (error) {
-            console.error('Error loading OBJ:', error);d
+            console.error('Error loading OBJ:', error);
         }
     );
 
@@ -101,7 +135,12 @@
                     child.castShadow = true;
                     child.receiveShadow = true;
                     child.material = new THREE.MeshStandardMaterial({
-                        color: 0xffffff
+                        map: knifeTexture,
+                        color: 0xffffff,
+                        metalness: 1.0,           // โลหะ 100%
+                        roughness: 0.05,           // ผิวเรียบมาก
+                        envMap: envMap,            // เพิ่ม reflection
+                        envMapIntensity: 2.0 
                     });
                 }
             });
@@ -116,9 +155,10 @@
     );
 
     function animate() {
-        renderer.render(scene, camera);
-        requestAnimationFrame(animate);
-    }
+            //redLight.intensity = 1.2 + Math.sin(Date.now() * 0.008) * 0.5 + Math.random() * 0.2;
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
     animate();
 
         window.addEventListener('keydown', (event) => {
