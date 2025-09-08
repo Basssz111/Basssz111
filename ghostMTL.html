@@ -17,20 +17,21 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/build/dat.gui.min.js"></script>
 
     <script>
-          const scene = new THREE.Scene();
+        const scene = new THREE.Scene();
 
-          const bgTexture = new THREE.TextureLoader().load('https://basssz111.github.io/Basssz111/NightSkyHDRI003_1K-HDR.png'); // เปลี่ยน URL เป็นภาพที่ต้องการ
+        const bgTexture = new THREE.TextureLoader().load('https://basssz111.github.io/Basssz111/NightSkyHDRI003_1K-HDR.png');
         scene.background = bgTexture;
-      
+
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true; // ✅ เปิดใช้งานเงา!
+        renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
-    
-        //หมอก
+
+        // หมอก
         scene.fog = new THREE.FogExp2(0x0a0a0f, 0.18);
 
         const groundTexture = new THREE.TextureLoader().load('https://basssz111.github.io/Basssz111/NightSkyHDRI003_1K-HDR.png');
@@ -49,7 +50,7 @@
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // ✅ กล้อง
+        // กล้อง
         const camera = new THREE.PerspectiveCamera(
             75,
             window.innerWidth / window.innerHeight,
@@ -63,109 +64,148 @@
         const ambientLight = new THREE.AmbientLight(0x222233, 0.5);
         scene.add(ambientLight);
 
-        const moonLight = new THREE.DirectionalLight(0xccccff, 0.7); // แสงทิศทาง
-        moonLight.position.set(5, 10, 5); // <-- fixed variable name
-        moonLight.castShadow = true; // ✅ แสงนี้สร้างเงา
+        // --- Moon Light (Directional) ---
+        const moonLight = new THREE.DirectionalLight(0xccccff, 0.7);
+        moonLight.position.set(5, 10, 5);
+        moonLight.castShadow = true;
         scene.add(moonLight);
 
+        // --- Red Light (Point) ---
         const redLight = new THREE.PointLight(0xff2222, 1.2, 10);
         redLight.position.set(2, 2, 2);
         redLight.castShadow = true;
         scene.add(redLight);
 
+        // dat.GUI for light position
+        const gui = new dat.GUI();
 
-/* Auto-exported from Blender */
+    const moonSettings = {
+        color: moonLight.color.getHex(),
+        visible: true
+    };
+
+    const moonFolder = gui.addFolder('Moon Light');
+        moonFolder.add(moonLight.position, 'x', -20, 20).name('X');
+        moonFolder.add(moonLight.position, 'y', 0, 20).name('Y');
+        moonFolder.add(moonLight.position, 'z', -20, 20).name('Z');
+        moonFolder.add(moonLight, 'intensity', 0, 2).name('Intensity');
+        moonFolder.addColor(moonSettings, 'color').name('Color').onChange(value => {
+        moonLight.color.set(value);
+    });
+    moonFolder.add(moonSettings, 'visible').name('On/Off').onChange(value => {
+        moonLight.visible = value;
+    });
+    moonFolder.open();
+
+    const redSettings = {
+        color: redLight.color.getHex(),
+        visible: true
+    };
+
+    const redFolder = gui.addFolder('Red Light');
+        redFolder.add(redLight.position, 'x', -20, 20).name('X');
+        redFolder.add(redLight.position, 'y', 0, 20).name('Y');
+        redFolder.add(redLight.position, 'z', -20, 20).name('Z');
+        redFolder.add(redLight, 'intensity', 0, 3).name('Intensity');
+        redFolder.addColor(redSettings, 'color').name('Color').onChange(value => {
+        redLight.color.set(value);
+    });
+        redFolder.add(redSettings, 'visible').name('On/Off').onChange(value => {
+        redLight.visible = value;
+    });
+        redFolder.open();
+
+        /* Removed duplicate redFolder declaration and controls for 'Red Light Position' */
+
+        // textures
         const textureLoader = new THREE.TextureLoader();
-        const envMap = new THREE.TextureLoader().load('https://basssz111.github.io/Basssz111/Kitchen_Knife_Blade_BaseColor.png');
+        const envMap = textureLoader.load('https://basssz111.github.io/Basssz111/Kitchen_Knife_Blade_BaseColor.png');
         envMap.mapping = THREE.EquirectangularReflectionMapping;
-        const ghostTexture = textureLoader.load('https://basssz111.github.io/Basssz111/shrine_aiStandardSurface5_BaseColor.png'); // Replace with your ghost texture
-        const knifeTexture = textureLoader.load('https://basssz111.github.io/Basssz111/Kitchen_Knife_Blade_BaseColor.png'); // Replace with your knife texture
+        const ghostTexture = textureLoader.load('https://basssz111.github.io/Basssz111/shrine_aiStandardSurface5_BaseColor.png');
+        const knifeTexture = textureLoader.load('https://basssz111.github.io/Basssz111/Kitchen_Knife_Blade_BaseColor.png');
 
-
-       const loader = new THREE.OBJLoader();
-    loader.load(
-        'https://basssz111.github.io/Basssz111/shrine.obj',
-        function (object) {
-            object.traverse(function (child) {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    child.material = new THREE.MeshStandardMaterial({
-                        map: ghostTexture,
-                        color: 0xffffff
-                    });
-                }
-            });
-            object.rotation.y = -Math.PI / 2;
-            scene.add(object);
-        },
-        undefined,
-        function (error) {
-            console.error('Error loading OBJ:', error);
-        }
-    );
-     loader.load(
-        'https://basssz111.github.io/Basssz111/ghost.obj',
-        function (object) {
-            object.traverse(function (child) {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    child.material = new THREE.MeshStandardMaterial({
-                        
-                        color: 0xffffff
-                    });
-                }
-            });
-            object.position.set(1.0,0,0.0)
-            object.scale.set(0.5,0.5,0.5);
-            scene.add(object);
-        },
-        undefined,
-        function (error) {
-            console.error('Error loading OBJ:', error);
-        }
-    );
+        const loader = new THREE.OBJLoader();
 
         loader.load(
-        'https://basssz111.github.io/Basssz111/knife.obj',
-        function (object) {
-            object.traverse(function (child) {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    child.material = new THREE.MeshStandardMaterial({
-                        map: knifeTexture,
-                        color: 0xffffff,
-                        metalness: 1.0,           // โลหะ 100%
-                        roughness: 0.05,           // ผิวเรียบมาก
-                        envMap: envMap,            // เพิ่ม reflection
-                        envMapIntensity: 2.0 
-                    });
-                }
-            });
-             object.position.set(1.3,1.25,0.1);
-             object.rotation.y = -Math.PI / 2;
-            scene.add(object);
-        },
-        undefined,
-        function (error) {
-            console.error('Error loading OBJ:', error);d
-        }
-    );
+            'https://basssz111.github.io/Basssz111/shrine.obj',
+            function (object) {
+                object.traverse(function (child) {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        child.material = new THREE.MeshStandardMaterial({
+                            map: ghostTexture,
+                            color: 0xffffff
+                        });
+                    }
+                });
+                object.rotation.y = -Math.PI / 2;
+                scene.add(object);
+            },
+            undefined,
+            function (error) {
+                console.error('Error loading OBJ:', error);
+            }
+        );
 
-    function animate() {
-            //redLight.intensity = 1.2 + Math.sin(Date.now() * 0.008) * 0.5 + Math.random() * 0.2;
+        loader.load(
+            'https://basssz111.github.io/Basssz111/ghost.obj',
+            function (object) {
+                object.traverse(function (child) {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        child.material = new THREE.MeshStandardMaterial({
+                            map: ghostTexture,
+                            color: 0xffffff
+                        });
+                    }
+                });
+                object.position.set(1.0, 0, 0.0)
+                object.scale.set(0.5, 0.5, 0.5);
+                scene.add(object);
+            },
+            undefined,
+            function (error) {
+                console.error('Error loading OBJ:', error);
+            }
+        );
+
+        loader.load(
+            'https://basssz111.github.io/Basssz111/knife.obj',
+            function (object) {
+                object.traverse(function (child) {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        child.material = new THREE.MeshStandardMaterial({
+                            map: knifeTexture,
+                            color: 0xffffff,
+                            metalness: 1.0,
+                            roughness: 0.05,
+                            envMap: envMap,
+                            envMapIntensity: 2.0
+                        });
+                    }
+                });
+                object.position.set(1.3, 1.25, 0.1);
+                object.rotation.y = -Math.PI / 2;
+                scene.add(object);
+            },
+            undefined,
+            function (error) {
+                console.error('Error loading OBJ:', error);
+            }
+        );
+
+        function animate() {
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
-    animate();
+        animate();
 
-        window.addEventListener('keydown', (event) => {
-
-        });
+        window.addEventListener('keydown', (event) => {});
 
     </script>
 </body>
-
 </html>
