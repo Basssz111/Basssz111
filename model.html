@@ -58,7 +58,6 @@
   envMap.encoding = THREE.sRGBEncoding;
   scene.environment = envMap;
 
-  // ลูกแก้วแบบ “มองทะลุได้”
   function loadHDRI(path, scene) {
     const rgbeLoader = new THREE.RGBELoader();
     rgbeLoader.setDataType(THREE.UnsignedByteType);
@@ -95,10 +94,36 @@ loadGLB('castle_on_hills.glb', scene, [-1,0,0], [1,1,1]);
     renderer.setSize(innerWidth, innerHeight);
   });
 
-  let t = 0;
+  // UI for adjusting directional light
+  const ui = document.createElement('div');
+  ui.style.position = 'fixed';
+  ui.style.top = '10px';
+  ui.style.left = '10px';
+  ui.style.background = 'rgba(255,255,255,0.8)';
+  ui.style.padding = '10px';
+  ui.style.borderRadius = '8px';
+  ui.style.zIndex = 10;
+  ui.innerHTML = `
+    <label>X: <input id="lx" type="range" min="-10" max="10" step="0.1" value="3"></label><br>
+    <label>Y: <input id="ly" type="range" min="0" max="10" step="0.1" value="5"></label><br>
+    <label>Z: <input id="lz" type="range" min="-10" max="10" step="0.1" value="2"></label><br>
+    <label>Intensity: <input id="lint" type="range" min="0" max="10" step="0.01" value="3"></label>
+  `;
+  document.body.appendChild(ui);
+
+  function updateLight() {
+    dir.position.x = parseFloat(document.getElementById('lx').value);
+    dir.position.y = parseFloat(document.getElementById('ly').value);
+    dir.position.z = parseFloat(document.getElementById('lz').value);
+    dir.intensity = parseFloat(document.getElementById('lint').value);
+  }
+  document.getElementById('lx').addEventListener('input', updateLight);
+  document.getElementById('ly').addEventListener('input', updateLight);
+  document.getElementById('lz').addEventListener('input', updateLight);
+  document.getElementById('lint').addEventListener('input', updateLight);
+  updateLight();
+
   (function loop(){
-    t += 0.01;
-    dir.position.x = 3 + Math.sin(t)*1.0;
     renderer.render(scene, camera);
     requestAnimationFrame(loop);
   })();
