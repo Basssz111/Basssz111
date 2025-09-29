@@ -533,7 +533,7 @@
   // --- Kickoff: load HDRi then GLB ---
   (async function start(){
     try{ await loadHDRI('castle.hdr'); } catch(e){ console.warn('Using dark background (no HDRi)'); }
-    try{ await loadGLB('assets/model/model.glb'); } catch(e){ console.warn('No default GLB found'); }
+    try{ await loadGLB('castle_on_hills.glb'); } catch(e){ console.warn('No default GLB found'); }
     renderModeHint();
   })();
 
@@ -592,4 +592,5 @@
   });
 </script>
 </body>
+
 </html>
