@@ -137,11 +137,11 @@
         const picTexture = textureLoader.load('https://basssz111.github.io/Basssz111/final/9b081f69-f709-4d1d-a787-786b4066ac74.jpg');
         const geo = new THREE.BoxGeometry(1, 1, 0.1);
         const mat = new THREE.MeshBasicMaterial({ map: picTexture });
-        const cube = new THREE.Mesh(geo, mat);
-        cube.scale.set(1.5, 1.5, 0.5);
-        cube.position.set(1, 1.5, -0.9);
-        cube.rotation.set(-0.3, -0.7, -0.2);
-        scene.add(cube);
+        const Mesh = new THREE.Mesh(geo, mat);
+        Mesh.scale.set(1.5, 1.5, 0.5);
+        Mesh.position.set(1, 1.5, -0.9);
+        Mesh.rotation.set(-0.3, -0.7, -0.2);
+        scene.add(Mesh);
 
     // โหลด back
     let backObject = null;
