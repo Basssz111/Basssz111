@@ -178,6 +178,26 @@
       });
     });
 
+    const pointLight = new THREE.PointLight(0xFFCC66, 0.1, 60); // สี, intensity, distance
+    pointLight.position.set(0.9, 1.45, -3.15);
+    pointLight.castShadow = true;
+    scene.add(pointLight);
+
+    const pointLight1 = new THREE.PointLight(0xFFCC66, 0.4, 60); // สี, intensity, distance
+    pointLight1.position.set(2.32, 1.6, 1.8);
+    pointLight1.castShadow = true;
+    scene.add(pointLight1);
+
+    const pointLight2 = new THREE.PointLight(0xFFCC66, 0.4, 60); // สี, intensity, distance
+    pointLight2.position.set(-0.25, 1.65, -3.15);
+    pointLight2.castShadow = true;
+    scene.add(pointLight2);
+
+    const pointLight3 = new THREE.PointLight(0xFFCC66, 0.7, 60); // สี, intensity, distance
+    pointLight3.position.set(2.32, 1.6, -1.17);
+    pointLight3.castShadow = true;
+    scene.add(pointLight3);
+
     // GLTF Model
     const gltfLoader = new THREE.GLTFLoader();
     gltfLoader.load('https://basssz111.github.io/Basssz111/final/saloongg.glb', (gltf) => {
