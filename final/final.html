@@ -70,7 +70,7 @@
     scene.add(ground);
 
     // แสง
-    scene.add(new THREE.AmbientLight(0xffe0b2, 0.25));
+    scene.add(new THREE.AmbientLight(0xffe0b2, 1.5));
     const dirLight = new THREE.DirectionalLight(0xffa366, 3.1);
     dirLight.position.set(5,6, 2);
     dirLight.castShadow = true;
