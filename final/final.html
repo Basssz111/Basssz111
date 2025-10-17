@@ -92,7 +92,6 @@
     lanternLight1.castShadow = true;
     scene.add(lanternLight1);
 
-
      //pointlight2
     const lanternLight2 = new THREE.PointLight(0xffd27f, 2.5, 4, 2);
     lanternLight2.position.set(4.9, 1.6, -0.9);
@@ -104,16 +103,12 @@
     lanternLight3.position.set(2.4, 2.7, 5.2);
     lanternLight3.castShadow = true;
     scene.add(lanternLight3);
-    const pointLightHelper = new THREE.PointLightHelper(lanternLight3, 0.3); // 0.3 คือรัศมีกรอบ
-    scene.add(pointLightHelper);
 
     //pointlight4
     const lanternLight4 = new THREE.PointLight(0xffd27f, 3, 4, 2);
     lanternLight4.position.set(0.8, 2.7, 5.2);
     lanternLight4.castShadow = true;
     scene.add(lanternLight4);
-    const pointLightHelper2 = new THREE.PointLightHelper(lanternLight4, 0.3); // 0.3 คือรัศมีกรอบ
-    scene.add(pointLightHelper2);
 
     // โหลด projects
     let ProjectsObject = null;
@@ -352,8 +347,6 @@
                     uLightColor1: { value: new THREE.Color(0xffd27f) },
                     uLightDir2: { value: dirLight.position.clone().normalize() },
                     uLightColor2: { value: new THREE.Color(0xffd27f) },
-                    //uLightDir3: { value: dirLight.position.clone().normalize() },
-                    //uLightColor3: { value: new THREE.Color(0xffa366) },
                     uMap: { value: new THREE.TextureLoader().load('https://basssz111.github.io/Basssz111/final/gunslinger_baseColor.png')}
                 }
             });
