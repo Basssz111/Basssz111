@@ -70,16 +70,50 @@
     scene.add(ground);
 
     // แสง
-    scene.add(new THREE.AmbientLight(0xffe0b2, 0.6));
+    scene.add(new THREE.AmbientLight(0xffe0b2, 0.25));
     const dirLight = new THREE.DirectionalLight(0xffa366, 3.1);
-    dirLight.position.set(5,6, 2);
+    dirLight.position.set(0,6,-3);
     dirLight.castShadow = true;
     scene.add(dirLight);
+    const dirLight2 = new THREE.DirectionalLight(0xffa366, 3);
+    dirLight2.position.set(0,1,0);
+    dirLight2.castShadow = true;
+    scene.add(dirLight2);
 
-    
+    //pointlight
+    const lanternLight = new THREE.PointLight(0xffd27f, 2.5, 4, 2);
+    lanternLight.position.set(-3, 1.6, -0.1);
+    lanternLight.castShadow = true;
+    scene.add(lanternLight);
 
-    // dat.GUI
-    //const gui = new dat.GUI();
+    //pointlight1
+    const lanternLight1 = new THREE.PointLight(0xffd27f, 2.5, 4, 2);
+    lanternLight1.position.set(5, 1.6, 2.1);
+    lanternLight1.castShadow = true;
+    scene.add(lanternLight1);
+
+
+     //pointlight2
+    const lanternLight2 = new THREE.PointLight(0xffd27f, 2.5, 4, 2);
+    lanternLight2.position.set(4.9, 1.6, -0.9);
+    lanternLight2.castShadow = true;
+    scene.add(lanternLight2);
+
+    //pointlight3
+    const lanternLight3 = new THREE.PointLight(0xffd27f, 2.5, 4, 2);
+    lanternLight3.position.set(2.4, 2.7, 5.2);
+    lanternLight3.castShadow = true;
+    scene.add(lanternLight3);
+    const pointLightHelper = new THREE.PointLightHelper(lanternLight3, 0.3); // 0.3 คือรัศมีกรอบ
+    scene.add(pointLightHelper);
+
+    //pointlight4
+    const lanternLight4 = new THREE.PointLight(0xffd27f, 3, 4, 2);
+    lanternLight4.position.set(0.8, 2.7, 5.2);
+    lanternLight4.castShadow = true;
+    scene.add(lanternLight4);
+    const pointLightHelper2 = new THREE.PointLightHelper(lanternLight4, 0.3); // 0.3 คือรัศมีกรอบ
+    scene.add(pointLightHelper2);
 
     // โหลด projects
     let ProjectsObject = null;
@@ -256,6 +290,91 @@
       });
     });
 
+    const vert = `
+            uniform float uTime;
+            varying vec3 vNormal;
+            varying vec3 vPosW;
+            varying vec2 vUv;
+
+            void main(){
+                vNormal = normalize(mat3(modelMatrix) * normal);
+                vec3 pos = position;
+                vPosW   = ( modelMatrix * vec4(pos, 1.0)).xyz;
+                vUv     = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+            }
+            `;
+
+            const frag = `
+            uniform vec3 uLightDir1;
+            uniform vec3 uLightColor1;
+            uniform vec3 uLightDir2;
+            uniform vec3 uLightColor2;
+            uniform sampler2D uMap;
+            varying vec3 vNormal;
+            varying vec3 vPosW;
+            varying vec2 vUv;
+
+            void main()
+            {
+                vec4 texel = texture2D(uMap, vUv);
+
+                // Light 1
+                float diffuse1 = max(dot(vNormal, uLightDir1), 0.0);
+                float levels = 4.0;
+                diffuse1 = floor(diffuse1 * levels) / levels;
+                vec3 R1 = reflect(-uLightDir1, vNormal);
+                vec3 V = normalize(cameraPosition - vPosW);
+                float specular1 = max(pow(dot(R1, V), 64.0), 0.0);
+                specular1 = step(0.5, specular1);
+                specular1 *= diffuse1;
+
+                // Light 2
+                float diffuse2 = max(dot(vNormal, uLightDir2), 0.0);
+                diffuse2 = floor(diffuse2 * levels) / levels;
+                vec3 R2 = reflect(-uLightDir2, vNormal);
+                float specular2 = max(pow(dot(R2, V), 64.0), 0.0);
+                specular2 = step(0.5, specular2);
+                specular2 *= diffuse2;
+
+                vec3 base = texel.rgb;
+                vec3 color = (base * (uLightColor1 * diffuse1 + uLightColor2 * diffuse2)) + vec3(specular1 + specular2);
+                gl_FragColor = vec4(color, 1.0);
+            }
+            `;
+            
+            const material = new THREE.ShaderMaterial({
+                vertexShader: vert,
+                fragmentShader: frag,
+                uniforms: {
+                    uTime: { value: 0 },
+                    uLightDir1: { value: lanternLight4.position.clone().normalize() },
+                    uLightColor1: { value: new THREE.Color(0xffd27f) },
+                    uLightDir2: { value: dirLight.position.clone().normalize() },
+                    uLightColor2: { value: new THREE.Color(0xffd27f) },
+                    //uLightDir3: { value: dirLight.position.clone().normalize() },
+                    //uLightColor3: { value: new THREE.Color(0xffa366) },
+                    uMap: { value: new THREE.TextureLoader().load('https://basssz111.github.io/Basssz111/final/gunslinger_baseColor.png')}
+                }
+            });
+
+            const objLoader = new THREE.OBJLoader();
+            objLoader.load(
+                'https://basssz111.github.io/Basssz111/final/cowboyFF.obj',
+                (obj) => {
+                    obj.traverse((node) => {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                            node.material = material;
+                        }
+                    });
+                    obj.position.set(1.5, 1.8, 4.8);
+                    obj.scale.set(0.7, 0.7, 0.7);
+                    obj.rotation.set(0, 10, 0);
+                    scene.add(obj);
+                },
+            );
     // GLTF Model
     const gltfLoader = new THREE.GLTFLoader();
     gltfLoader.load('https://basssz111.github.io/Basssz111/final/saloonOBJ.glb', (gltf) => {
@@ -382,25 +501,7 @@
         updateWeedShader();
       }
     );
-    //pointlight
-    const lanternLight = new THREE.PointLight(0xffd27f, 3, 5, 2);
-    lanternLight.position.set(-3, 1.6, -0.1);
-    lanternLight.castShadow = true;
-    scene.add(lanternLight);
-
-    //pointlight1
-    const lanternLight1 = new THREE.PointLight(0xffd27f, 2.2, 2.8, 2);
-    lanternLight1.position.set(5, 1.6, 2.1);
-    lanternLight1.castShadow = true;
-    scene.add(lanternLight1);
-
-
-     //pointlight2
-    const lanternLight2 = new THREE.PointLight(0xffd27f, 2.2, 2.8, 2);
-    lanternLight2.position.set(4.9, 1.6, -0.9);
-    lanternLight2.castShadow = true;
-    scene.add(lanternLight2);
-
+    
 
     // Raycaster
     const raycaster = new THREE.Raycaster();
